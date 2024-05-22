@@ -19,7 +19,7 @@ from glob import glob
 
 # Custom files 
 from models.autoencoder import Autoencoder
-from models.autoencoder_fc import autoencoder_fc
+from models.resnet import resnet
 from make_dataset import CustomDataset
 from train import model_fit
 
