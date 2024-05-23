@@ -42,21 +42,26 @@ def main(config = None):
             Autoencoder(),
         )
 
-# def dry_run():
-#     batch_size = 1
+
+# def main():
+
+#     batch_size = 256
 #     learning_rate = 1e-4
-#     epoch = 2
+#     epoch = 40
 #     dataset_path = glob("./data/features/classes/train*.pkl")[0]
 
-#     model_fit(
-#         batch_size,
-#         learning_rate,
-#         epoch,
-#         dataset_path,
-#         Autoencoder(),
-#     )
+#     model_name = "2D_DUAL_AE_32_8_ALL_BN"
+#     with wandb.init(project = "dcase_2024_t02", name = model_name,):
+#         model_fit(
+#             batch_size,
+#             learning_rate,
+#             epoch,
+#             dataset_path,
+#             Autoencoder(),
+#         )
 
 if __name__ == "__main__": 
+    # main()
     wandb.login()
     sweep_configuration = {
         "method": "grid",
@@ -80,8 +85,7 @@ if __name__ == "__main__":
                 "values": [100]
             },
             "dataset_path": {
-                "values": list(glob("/home/tori/Desktop/workspace/dcase2024/conv_autoencoder/data/features/classes/train*.pkl")),
-                # "values": [1, 2],
+                "values": glob("/home/tori/Desktop/workspace/dcase2024/conv_autoencoder/data/features/classes/train*.pkl"),
             },
         },
     }
