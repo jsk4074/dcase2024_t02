@@ -48,7 +48,7 @@ class CustomDataset(Dataset):
         self.feature_data = [[i[0]] for i in self.raw_data] 
         
         # Label 
-        self.label_data = [[i[1]] for i in self.raw_data] 
+        self.label_data = [[i[-1]] for i in self.raw_data] 
         print(self.label_data[0])
 
     # Data size return 

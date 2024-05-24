@@ -64,7 +64,7 @@ def main():
 
         # Cropping features to "crop_sec"
         print("="*20, "Cropping features", "="*20)
-        audio_data = [[np.array(i[0][int(16e3) * 1:int(16e3) * (crop_sec + 1)]), i[1], i[2]] for i in tqdm(audio_data)] 
+        audio_data = [[np.array(i[0][int(16e3):int(16e3) * (crop_sec + 1)]), i[1], i[2]] for i in tqdm(audio_data)] 
 
 
         print("="* 20, "DEBUG", "="* 20)

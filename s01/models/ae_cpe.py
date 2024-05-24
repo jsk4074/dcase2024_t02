@@ -9,9 +9,9 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 
 # Define model 
-class resnet(nn.Module):
+class ae_cpe(nn.Module):
     def __init__(self):
-        super(resnet, self).__init__()
+        super(ae_cpe, self).__init__()
         self.encoder = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
@@ -39,7 +39,8 @@ class resnet(nn.Module):
             nn.ReLU(),
 
             nn.ConvTranspose2d(32, 1, kernel_size=3, stride=2, padding=1, output_padding=1),
-            nn.Sigmoid()
+            nn.BatchNorm2d(1),
+            nn.ReLU(),
         )
 
         self.fe = nn.Sequential(
@@ -60,8 +61,12 @@ class resnet(nn.Module):
         )
 
         self.fc = nn.Sequential(
-            nn.Flatten(),
-            # nn.full
+            nn.Linear(2048, 128),
+            nn.ReLU(),
+            nn.Linear(128, 500),
+            nn.ReLU(),
+            nn.Linear(500, 2),
+            nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -73,7 +78,10 @@ class resnet(nn.Module):
 
         x = self.fe(x)
 
-        return y3
+        x = torch.flatten(x, 1)
+
+        x = self.fc(x)
+        return x
 
 
 

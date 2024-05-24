@@ -19,35 +19,24 @@ from glob import glob
 
 # Custom files 
 from models.autoencoder import Autoencoder
-from conv_autoencoder.models.ae_cpe import resnet
+from models.ae_cpe import ae_cpe
 from train_dry import model_fit
-
-import wandb
 
 def main():
 
-    batch_size = 256
+    batch_size = 128
     learning_rate = 1e-4
-    epoch = 40
+    epoch = 2
     dataset_path = glob("./data/features/classes/train*.pkl")[0]
 
-    # model_fit(
-    #     batch_size,
-    #     learning_rate,
-    #     epoch,
-    #     dataset_path,
-    #     Autoencoder(),
-    #     mode = "train",
-    # )
-
     model_name = "2D_DUAL_AE_32_8_ALL_BN"
-    with wandb.init(project = "dcase_2024_t02", name = model_name,):
-        model_fit(
-            batch_size,
-            learning_rate,
-            epoch,
-            dataset_path,
-            Autoencoder(),
-        )
+    # with wandb.init(project = "dcase_2024_t02", name = model_name,):
+    model_fit(
+        batch_size,
+        learning_rate,
+        epoch,
+        dataset_path,
+        ae_cpe(),
+    )
 
 if __name__ == "__main__": main()
