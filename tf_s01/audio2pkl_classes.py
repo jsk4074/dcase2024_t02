@@ -31,6 +31,7 @@ def main():
     to_feature = "mfcc"
     # path = glob("../data/unziped/*")
     class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slider']
+    labels = ["normal", "anomaly"]
 
     if is_test == True: 
         dataset_type == "test"
@@ -57,10 +58,12 @@ def main():
         
         # Loading data [audio_wav, classes, domain]
         print("="*20, "Loading data", "="*20)
-        raw_data = [[librosa.load(i, sr=16e3)[0], i.split("/")[3], i.split("_")[2]] for i in tqdm(path)]
+        raw_data = [[librosa.load(i, sr=16e3)[0], i.split("/")[3], i.split("_")[2], i.split("_")[4]] for i in tqdm(path)]
 
-        # label and domain encoding to int [audio_feature, label, source]
-        audio_data = [[i[0], class_names.index(i[1]), domain.index(i[2])] for i in tqdm(raw_data)]
+        print(raw_data[0])
+
+        # label and domain encoding to int [audio_feature, label(class), source, label]
+        audio_data = [[i[0], class_names.index(i[1]), domain.index(i[2]), 0] if i[3] == "normal" else [i[0], class_names.index(i[1]), domain.index(i[2]), 1] for i in tqdm(raw_data)]
 
         # Cropping features to "crop_sec"
         print("="*20, "Cropping features", "="*20)
@@ -73,7 +76,7 @@ def main():
 
         # Extracting features
         print("="*20, "Extracting features", "="*20) 
-        feature_data = [[librosa.feature.mfcc(y = i[0], sr = 16e3, n_mfcc=128,), i[1], i[2], 0] for i in tqdm(audio_data)] 
+        feature_data = [[librosa.feature.mfcc(y = i[0], sr = 16e3, n_mfcc=128,), i[1], i[2], i[3]] for i in tqdm(audio_data)] 
 
         # Saving data as .pkl format 
         print("="*20, "Saving raw audio", "="*20)
