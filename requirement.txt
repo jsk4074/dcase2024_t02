@@ -3,3 +3,6 @@ matplotlib
 tqdm
 ipywidgets
 wandb 
+audiomentations
+pandas
+seaborn

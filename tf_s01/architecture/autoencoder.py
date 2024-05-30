@@ -10,6 +10,7 @@ class autoencoder_fc(Model):
     self.encoder = tf.keras.Sequential([
     #   layers.Input(shape=(128, 128, 1)),
       layers.Rescaling(1./255, input_shape=(128, 128, 1)),
+      layers.Conv2D(32, (3, 3), activation='relu', padding='same', strides=2),
       layers.Conv2D(16, (3, 3), activation='relu', padding='same', strides=2),
       layers.Conv2D(8, (3, 3), activation='relu', padding='same', strides=2),
     ])
@@ -17,6 +18,7 @@ class autoencoder_fc(Model):
     self.decoder = tf.keras.Sequential([
       layers.Conv2DTranspose(8, kernel_size=3, strides=2, activation='relu', padding='same'),
       layers.Conv2DTranspose(16, kernel_size=3, strides=2, activation='relu', padding='same'),
+      layers.Conv2DTranspose(32, kernel_size=3, strides=2, activation='relu', padding='same'),
       layers.Conv2D(1, kernel_size=(3, 3), activation='sigmoid', padding='same'),
     ])
     
@@ -32,12 +34,12 @@ class autoencoder_fc(Model):
     result = self.fc(decoded)
     return result
   
-class Denoise(Model):
+class autoencoder(Model):
   def __init__(self):
-    super(Denoise, self).__init__()
+    super(autoencoder, self).__init__()
     self.encoder = tf.keras.Sequential([
-      layers.Rescaling(1./255, input_shape=(128, 128, 1)),
-      # layers.Input(shape=(128, 128, 1)),
+      # layers.Rescaling(1./255, input_shape=(128, 128, 1)),
+      layers.Input(shape=(128, 128, 1)),
       layers.Conv2D(16, (3, 3), activation='relu', padding='same', strides=2),
       layers.Conv2D(8, (3, 3), activation='relu', padding='same', strides=2)])
 

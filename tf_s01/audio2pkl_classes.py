@@ -29,7 +29,6 @@ def main():
     crop_sec = 4
     padding = 1
     to_feature = "mfcc"
-    # path = glob("../data/unziped/*")
     class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slider']
     labels = ["normal", "anomaly"]
 
@@ -65,10 +64,12 @@ def main():
         # label and domain encoding to int [audio_feature, label(class), source, label]
         audio_data = [[i[0], class_names.index(i[1]), domain.index(i[2]), 0] if i[3] == "normal" else [i[0], class_names.index(i[1]), domain.index(i[2]), 1] for i in tqdm(raw_data)]
 
-        # Cropping features to "crop_sec"
+        # Cropping features to "crop_sec" + augment feature
         print("="*20, "Cropping features", "="*20)
-        audio_data = [[np.array(i[0][int(16e3):int(16e3) * (crop_sec + 1)]), i[1], i[2]] for i in tqdm(audio_data)] 
-
+        audio_data_one = [[np.array(i[0][int(16e3):int(16e3) * (crop_sec + 1)]), i[1], i[2], i[3]] for i in tqdm(audio_data)] 
+        audio_data_two = [[np.array(i[0][int((int(16e3) * (crop_sec + 2)) / 2):int((int(16e3) * (crop_sec * 2 + 1)) / 2)]), i[1], i[2], i[3]] for i in tqdm(audio_data)] 
+        audio_data_three = [[np.array(i[0][int(16e3) * (crop_sec + 2):int(16e3) * (crop_sec * 2 + 1)]), i[1], i[2], i[3]] for i in tqdm(audio_data)] 
+        audio_data = audio_data_one + audio_data_two + audio_data_three
 
         print("="* 20, "DEBUG", "="* 20)
         print(audio_data[0])
@@ -81,7 +82,7 @@ def main():
         # Saving data as .pkl format 
         print("="*20, "Saving raw audio", "="*20)
         save_list(
-            "./data/features/classes/" + dataset_type + "_sr_16e3_" + class_names[index_numba] + "_crop" + str(crop_sec) + "_feature" + to_feature + "ADD_label.pkl", 
+            "./data/features/classes/" + dataset_type + "_sr_16e3_" + class_names[index_numba] + "_crop" + str(crop_sec) + "_feature" + to_feature + "ADD_labelx3.pkl", 
             feature_data
         )
 
