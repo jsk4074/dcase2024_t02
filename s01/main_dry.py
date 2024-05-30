@@ -23,20 +23,19 @@ from models.ae_cpe import ae_cpe
 from train_dry import model_fit
 
 def main():
-
-    batch_size = 128
+    batch_size = 32
     learning_rate = 1e-4
     epoch = 2
-    dataset_path = glob("./data/features/classes/train*.pkl")[0]
+    dataset_path = glob("./data/features/classes/train*x3.pkl")[0]
+    print("Training on", dataset_path.split("/")[-1])
+    # model_name = "2D_DUAL_AE_32_8_ALL_BN"
 
-    model_name = "2D_DUAL_AE_32_8_ALL_BN"
-    # with wandb.init(project = "dcase_2024_t02", name = model_name,):
     model_fit(
         batch_size,
         learning_rate,
         epoch,
         dataset_path,
-        ae_cpe(),
+        Autoencoder(),
     )
 
 if __name__ == "__main__": main()

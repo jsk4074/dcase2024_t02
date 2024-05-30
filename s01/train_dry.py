@@ -21,7 +21,7 @@ from glob import glob
 # from models.autoencoder import Autoencoder, Autoencoder_FC
 from make_dataset import CustomDataset
 
-def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "train", criterion = nn.CrossEntropyLoss()):
+def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "train", criterion = nn.MSELoss()):
     dataset = CustomDataset(
         # pkl_path = "./data/raw_samples/train_sr_16e3.pkl", 
         # pkl_path = "./data/features/classes/train_sr_16e3_bearing_crop4_featuremfcc.pkl", 
@@ -69,11 +69,15 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
                     # Make prediction for loss calculation
                     img = img.to(device)
                     pred = model(img)
-                        
+
+                    print("="*20, "DEBUG", "="*20)
+                    print(np.shape(img))
+                    print("="*20, "DEBUG", "="*20)
+
                     label = label(label)
                     
                     # Loss caculation
-                    loss = criterion(pred, label)
+                    loss = criterion(pred, img)
 
                     # Run through optimizer
                     optimizer.zero_grad()
@@ -113,7 +117,7 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
                 pred = model(img)
                     
                 # Loss caculation
-                loss = criterion(pred, 0)
+                loss = criterion(pred, img)
 
                 # Run through optimizer
                 optimizer.zero_grad()

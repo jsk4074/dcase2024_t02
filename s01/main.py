@@ -19,7 +19,7 @@ from glob import glob
 
 # Custom files 
 from models.autoencoder import Autoencoder
-from models.ae_cpe import resnet
+from models.ae_cpe import ae_cpe
 from make_dataset import CustomDataset
 from train import model_fit
 
@@ -32,7 +32,7 @@ domain = ['source', 'target']
 class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slider']
 
 def main(config = None): 
-    model_name = "CE_LOSS_2D_DUAL_AE_32_4_ALL_BN"
+    model_name = "MSE_LOSS_2D_DUAL_AE_32_4_ALL_BN_x3"
     with wandb.init(project = "dcase_2024_t02", name = model_name,):
         model_fit(
             wandb.config["batch_size"],
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 "values": [100]
             },
             "dataset_path": {
-                "values": list(glob("./data/features/classes/train*.pkl")),
+                "values": list(glob("./data/features/classes/train*x3.pkl")),
             },
         },
     }

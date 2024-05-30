@@ -100,16 +100,16 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
 
             preds = []
             print("Epoch:", epoch_count + 1)
-            for img, _ in tqdm(train_loader):
+            for img, label in tqdm(train_loader):
                 # Make prediction for loss calculation
                 img = img.to(device)
                 pred = model(img)
-                    
+
                 # Loss caculation
                 loss = criterion(pred, img)
 
                 # Run through optimizer
-                optimizer.zero_grad()
+                # optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 avg_cost += loss / total_batch
