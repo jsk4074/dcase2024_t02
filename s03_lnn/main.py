@@ -1,26 +1,29 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
+# import torch.nn as nn
+# import torch.optim as optim
+# from torchsummary import summary
+# from torch.utils.data import Dataset
+# from torch.utils.data import DataLoader
 
-from torchviz import make_dot
-from torchvision import transforms
-import torchvision.models as models 
-import torchvision.transforms as transforms
+# from torchviz import make_dot
+# from torchvision import transforms
+# import torchvision.models as models 
+# import torchvision.transforms as transforms
 
 import librosa 
 import numpy as np
-import pickle as pkl
-import matplotlib.pyplot as plt 
+# import pickle as pkl
+# import matplotlib.pyplot as plt 
 
-from tqdm import tqdm 
+# from tqdm import tqdm 
 from glob import glob 
 
 # Custom files 
-from models.autoencoder import Autoencoder
+# from models.autoencoder import Autoencoder
 # from models.ae_cpe import ae_cpe
-from make_dataset import CustomDataset
+# from models.ae_liquid import vision_lnn
+from models.ae_ncp import ncp
+# from make_dataset import CustomDataset
 from train import model_fit
 
 import wandb
@@ -32,14 +35,17 @@ domain = ['source', 'target']
 class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slider']
 
 def main(config = None): 
-    model_name = "MSE_LOSS_2D_DUAL_AE_32_4_ALL_BN_x3"
+    model = ncp()
+    model_name = "NCP_MSE_LOSS_2D_SINGLE_AE_32_4_ALL_BN_x3"
+    # summary(model, (1, 128, 128))
+
     with wandb.init(project = "dcase_2024_t02", name = model_name,):
         model_fit(
             wandb.config["batch_size"],
             wandb.config["learning_rate"],
             wandb.config["epoch"],
             wandb.config["dataset_path"],
-            Autoencoder(),
+            model,
         )
 
 if __name__ == "__main__": 
@@ -57,10 +63,10 @@ if __name__ == "__main__":
                 "values": [1e-3, 1e-4, 1e-5]
             },
             "batch_size": {
-                "values": [32, 64, 128]
+                "values": [16, 32, 64, 128]
             },
             "epoch": {
-                "values": [100]
+                "values": [150]
             },
             "dataset_path": {
                 "values": list(glob("./data/features/classes/train*x3.pkl")),

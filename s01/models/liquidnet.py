@@ -8,6 +8,8 @@ from torch.utils.data import DataLoader
 import torchvision.models as models 
 import torchvision.transforms as transforms
 
+from liquidnet.main import LiquidNet
+
 # Define model 
 class ae_cpe(nn.Module):
     def __init__(self):
