@@ -22,7 +22,7 @@ from glob import glob
 # from models.autoencoder import Autoencoder
 # from models.ae_cpe import ae_cpe
 # from models.ae_liquid import vision_lnn
-from models.ae_ncp import ncp
+from architecture.ae_ncp import ncp
 # from make_dataset import CustomDataset
 from train import model_fit
 
@@ -58,15 +58,17 @@ if __name__ == "__main__":
             "goal": "maximize",
             "name": "accuracy"
         },
+        
         "parameters": {
             "learning_rate": {
-                "values": [1e-3, 1e-4, 1e-5]
+                # "values": [1e-3, 1e-4, 1e-5]
+                "values": [1e-4, 1e-5, 1e-6]
             },
             "batch_size": {
-                "values": [16, 32, 64, 128]
+                "values": [32, 64, 128]
             },
             "epoch": {
-                "values": [150]
+                "values": [50]
             },
             "dataset_path": {
                 "values": list(glob("./data/features/classes/train*x3.pkl")),
