@@ -92,3 +92,6 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
         # print("Loss:", str(float(avg_cost)).format(":e"))
         print("Loss:", loss.item())
         print("="*50)
+    
+    path = "./saved_model/"
+    model_name = ""
