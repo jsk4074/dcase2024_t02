@@ -12,6 +12,8 @@ from torchviz import make_dot
 
 # import librosa 
 import numpy as np
+# import pickle as pkl
+# import matplotlib.pyplot as plt 
 
 from tqdm import tqdm 
 from glob import glob 
@@ -22,14 +24,28 @@ import wandb
 torch.manual_seed(7777)
 np.random.seed(7777)
 
+def accuracy(predictions, labels):
+    _, predicted_classes = torch.max(predictions, dim=1)  
+    correct = (predicted_classes == labels).float()  
+    acc = correct.sum() / len(correct) 
+    return acc
+
+def dataset_prep(path, batch_size, mode="train"):
+    dataset = CustomDataset(
+        pkl_path = path, 
+        domain=1,
+        mode=mode
+    )
+
+    train_loader = DataLoader( 
+        dataset, 
+        batch_size=batch_size, 
+        shuffle=True, 
+    ) 
+
+    return train_loader
 
 def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "train", criterion = nn.CrossEntropyLoss()):
-    def accuracy(predictions, labels):
-        _, predicted_classes = torch.max(predictions, dim=1)  
-        correct = (predicted_classes == labels).float()  
-        acc = correct.sum() / len(correct) 
-        return acc
-    
     dataset = CustomDataset(
         pkl_path = dataset_path, 
     )
@@ -53,13 +69,14 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
 
     # Optimizer and Loss function 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
     print("============================ Train mode ============================")
     for epoch_count in range(epoch):
         avg_cost = 0
         total_batch = len(train_loader)
         total_correct = 0
         total_samples = 0
-
+        
         preds = []
         print("Epoch:", epoch_count + 1)
         for img, label in tqdm(train_loader):
@@ -67,7 +84,9 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
             # Make prediction for loss calculation
             img = img.to(device)
             label = label.to(device)
-            label = torch.argmax(label, dim=1) 
+            label = label.squeeze(dim=-1)
+
+            # Fitting model 
             pred = model(img)
             
             # Loss caculation
@@ -81,33 +100,24 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
 
             # Accuracy calculation
             acc = accuracy(pred, label) 
-
+            avg_cost += loss / total_batch
             total_correct += (pred.argmax(1) == label).type(torch.float).sum().item()
             total_samples += label.size(0)
 
-
-
         # Accuracy calculation for batch
-        # correct_prediction = torch.argmax(pred, 1) == label
-        # acc = correct_prediction / total_batch
-        # preds = torch.tensor(preds)
-        # print(preds)
         acc = total_correct / total_samples
-        # acc = preds.mean()
-
-        # Save for later training metric visualizations
-        # v_acc.append(acc)
-        # v_loss.append(float(avg_cost))
+        print("Accuracy:", acc * 100)
+        print("Loss:", loss.item())
+        print("="*50)
 
         # Visualize the results
         print("Accuracy:", acc * 100)
-        # print("Accuracy:", acc.item() * 100)
         # print("Loss:", str(float(avg_cost)).format(":e"))
         print("Loss:", loss.item())
         print("="*50)
-    
-    # Saving models
-    path = "./saved_model/"
-    model_name = "test_save"
-    print("Saving trained model")
-    torch.save(model, path + model_name + ".pkl")
+            
+        wandb.log({
+            "accuracy": acc, 
+            "loss": loss.item(), 
+            "batch_size": batch_size,
+        }) 

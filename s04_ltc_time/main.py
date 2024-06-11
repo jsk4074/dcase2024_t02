@@ -19,12 +19,13 @@ import numpy as np
 from glob import glob 
 
 # Custom files 
-# from models.autoencoder import Autoencoder
-# from models.ae_cpe import ae_cpe
-# from models.ae_liquid import vision_lnn
+# from architecture.autoencoder import Autoencoder
+from architecture.ae_cpe import ae_cpe
+# from architecture.ae_liquid import vision_lnn
 from architecture.ae_ncp import ncp
 # from make_dataset import CustomDataset
 from train import model_fit
+from test import model_test
 
 import wandb
 
@@ -36,43 +37,66 @@ class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slid
 
 def main(config = None): 
     model = ncp()
-    model_name = "NCP_MSE_LOSS_2D_SINGLE_AE_32_4_ALL_BN_x3"
-    # summary(model, (1, 128, 128))
+    model_name = "NCP_CE_LOSS_2D_QUAD_AE_32_4_ALL_BN_x3"
+    run =  wandb.init(config=config)
+    run.name= wandb.config["dataset_path"].split("/")[-1].split("_")[3] + "_" + str(wandb.config["learning_rate"]) + "_" + str(wandb.config["batch_size"])
 
-    with wandb.init(project = "dcase_2024_t02", name = model_name,):
-        model_fit(
-            wandb.config["batch_size"],
-            wandb.config["learning_rate"],
-            wandb.config["epoch"],
-            wandb.config["dataset_path"],
-            model,
+    # with wandb.init(project = "dcase_2024_t02", name = "runs",):
+    # with run:
+    train_path = wandb.config["dataset_path"]
+    test_path = train_path.replace("train", "test")
+    run_name = train_path.split("/")[-1].split("_")[3]
+
+    wandb.log({"run_name": run_name,})
+
+    print("="*20, "DEBUG", "="*20)
+    print(train_path)
+    print(test_path)
+    print("="*20, "DEBUG", "="*20)
+
+    model_fit(
+        wandb.config["batch_size"],
+        wandb.config["learning_rate"],
+        wandb.config["epoch"],
+        train_path,
+        # wandb.config["train_dataset_path"],
+        model,
+    )
+
+    with torch.no_grad():
+        model_test(
+            batch_size = 1000,
+            dataset_path = test_path,
+            model = model,
         )
+
 
 if __name__ == "__main__": 
     # main()
     wandb.login()
     sweep_configuration = {
+        "name": "NCP_CE_LOSS_2D_QUAD_AE",
         "method": "grid",
-
         "metric": {
             "goal": "maximize",
             "name": "accuracy"
         },
-        
         "parameters": {
             "learning_rate": {
-                # "values": [1e-3, 1e-4, 1e-5]
-                "values": [1e-5, 1e-6, 1e-7]
+                "values": [1e-3, 1e-4, 1e-5]
             },
             "batch_size": {
-                "values": [128, 256, 512]
+                "values": [16, 32, 64, 128]
             },
             "epoch": {
-                "values": [15]
+                "values": [10]
             },
             "dataset_path": {
                 "values": list(glob("./data/features/classes/train*x3.pkl")),
             },
+            # "test_dataset_path": {
+            #     "values": list(glob("./data/features/classes/test*x3.pkl")),
+            # },
         },
     }
 

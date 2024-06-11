@@ -19,7 +19,7 @@ from glob import glob
 
 # Custom files 
 from models.autoencoder import Autoencoder
-from models.ae_cpe import ae_cpe
+from s01.models.liquidnet import ae_cpe
 from train_dry import model_fit
 
 def main():

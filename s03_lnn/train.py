@@ -24,6 +24,12 @@ import wandb
 torch.manual_seed(7777)
 np.random.seed(7777)
 
+def accuracy(predictions, labels):
+    _, predicted_classes = torch.max(predictions, dim=1)  
+    correct = (predicted_classes == labels).float()  
+    acc = correct.sum() / len(correct) 
+    return acc
+
 def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "train", criterion = nn.CrossEntropyLoss()):
     dataset = CustomDataset(
         pkl_path = dataset_path, 
@@ -102,7 +108,8 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
         for epoch_count in range(epoch):
             avg_cost = 0
             total_batch = len(train_loader)
-                
+            total_correct = 0
+            total_samples = 0
 
             preds = []
             print("Epoch:", epoch_count + 1)
@@ -124,25 +131,26 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
                 avg_cost += loss / total_batch
 
                 # Accuracy calculation
-                # pred = torch.argmax(pred, 1) == img
-                preds.append(pred.float().mean())
+                acc = accuracy(pred, label) 
+
+                total_correct += (pred.argmax(1) == label).type(torch.float).sum().item()
+                total_samples += label.size(0)
 
             # Accuracy calculation for batch
-            preds = torch.tensor(preds)
-            acc = preds.float().mean()
+            acc = total_correct / total_samples
 
-            # Save for later training metric visualizations
-            v_acc.append(acc)
-            v_loss.append(float(avg_cost))
+            # # Save for later training metric visualizations
+            # v_acc.append(acc)
+            # v_loss.append(float(avg_cost))
 
             # Visualize the results
-            print("Accuracy:", acc.item() * 100)
+            print("Accuracy:", acc * 100)
             # print("Loss:", str(float(avg_cost)).format(":e"))
             print("Loss:", loss.item())
             print("="*50)
                 
             wandb.log({
-                "accuracy": acc.item(), 
+                "accuracy": acc, 
                 "loss": loss.item(), 
                 "batch_size": batch_size,
             }) 

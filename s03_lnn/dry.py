@@ -41,12 +41,12 @@ def main(config = None):
     model_name = "NCP_MSE_LOSS_2D_SINGLE_AE_32_4_ALL_BN_x3"
     dataset_path = "./data/features/classes/train_sr_16e3_bearing_crop4_featuremfccADD_labelx3.pkl"
     model_fit(
-        batch_size = 32,
-        learning_rate = 1e-4,
-        epoch = 50,
+        batch_size = 256,
+        learning_rate = 1e-6,
+        epoch = 4,
         dataset_path = dataset_path,
         model = model,
-    )
+    )   
 
 if __name__ == "__main__": 
     main()
