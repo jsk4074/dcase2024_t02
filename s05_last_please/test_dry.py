@@ -18,8 +18,6 @@ from tqdm import tqdm
 from glob import glob 
 from make_dataset import CustomDataset
 
-import wandb
-
 torch.manual_seed(7777)
 np.random.seed(7777)
 
@@ -44,25 +42,26 @@ def dataset_prep(path, batch_size, shuffle=True, mode="train"):
 
     return train_loader
 
-def model_test(batch_size, dataset_path, model, criterion = nn.CrossEntropyLoss()):
+def model_test(batch_size, dataset_path, model, criterion = nn.CrossEntropyLoss(), threshold = 0.4):
     # Load dataset
     train_loader = dataset_prep(dataset_path, batch_size, shuffle=False, mode="test")
 
-    model = torch.load("./saved_model/test_save.pkl")
+    criterion = nn.CrossEntropyLoss()
+    ae_criterion = nn.MSELoss()
+
+    # model = torch.load("./saved_model/test_save.pkl")
 
     # Auto config model to fit w/ gpu or cpu 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    print("Running on :", device)
+    # print("Running on :", device)
 
     model.to(device)
-    print("============================ Test mode ============================")
-    # for epoch_count in range(epoch):
-    avg_cost = 0
-    total_batch = len(train_loader)
+    # print("============================ Test / Validation mode ============================")
+    total_anomaly = 0
     total_correct = 0
     total_samples = 0
 
-    for img1, img2, img3, label in tqdm(train_loader):
+    for img1, img2, img3, label in train_loader:
         # Make prediction for loss calculation
         img1 = img1.to(device)
         img2 = img2.to(device)
@@ -70,30 +69,40 @@ def model_test(batch_size, dataset_path, model, criterion = nn.CrossEntropyLoss(
         label = label.to(device)
         label = label.squeeze(dim=-1) 
 
+        # print("="* 20, "DEBUG", "="* 20)
+        # print(img1.size())
+        # print(img2.size())
+        # print(img3.size())
+        # print("="* 20, "DEBUG", "="* 20)
+
         # Fitting
-        pred = model(img1, img2, img3) 
+        d1, d2, d3, pred = model(img1, img2, img3)
 
-        # Loss caculation
-        test_loss = criterion(pred, label) 
+        # Loss calculation
+        ae1_loss = ae_criterion(d1, img1) 
+        ae2_loss = ae_criterion(d2, img2) 
+        ae3_loss = ae_criterion(d3, img3) 
+        lnn_loss = criterion(pred, label) 
+        total_loss = ae1_loss + ae2_loss + ae3_loss + lnn_loss
 
+        print(total_loss.item(), label)
         # Accuracy calculation
-        test_acc = accuracy(pred, label) 
-        avg_cost += test_loss / total_batch
+        if total_loss.item() > threshold and label == 1: total_anomaly += 1
+        elif total_loss.item() < threshold and label == 0: total_anomaly += 1
+
         total_correct += (pred.argmax(1) == label).type(torch.float).sum().item()
         total_samples += label.size(0)
-
-        for i in range(len(pred)):
-            print(pred[i], end="")
-            print(label[i])
+        # for i in range(len(pred)):
+        #     print("Pred :", pred.argmax(1)[i].item(), end="")
+        #     print(", Label :", label[i].item(), end="")
+        #     print(pred.argmax(1)[i].item() == label[i].item())
 
     # Accuracy calculation for batch
-    test_acc = total_correct / total_samples
-    print("Accuracy:", test_acc * 100)
-    print("Loss:", test_loss.item())
+    acc = total_correct / total_samples
+    anomaly_acc = total_anomaly / total_samples
+    print("val Accuracy:", acc * 100, end="  ")
+    print("anomaly_acc:", anomaly_acc * 100, end="  ")
+    print("val loss:", total_loss.item(), end="  ")
+    print("threshold :", threshold)
     print("="*50)
-
-    wandb.log({
-        "test_accuracy": test_acc, 
-        "test_loss": test_loss.item(), 
-        "test_batch_size": batch_size,
-    })
+    return acc, anomaly_acc, total_loss.item(), threshold

@@ -23,7 +23,7 @@ def main(config = None):
     model_fit(
         batch_size = 50,
         learning_rate = 1e-4,
-        epoch = 6,
+        epoch = 3,
         dataset_path = "./data/features/classes/train_sr_16e3_valve_crop4_featuremfcc_s04.pkl",
         model = model,
         mode = "train",

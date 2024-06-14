@@ -1,23 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-# from torchvision import transforms
-# from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
-# import torchvision.models as models 
-# import torchvision.transforms as transforms
-
 from torchviz import make_dot
-
-# import librosa 
 import numpy as np
-# import pickle as pkl
-# import matplotlib.pyplot as plt 
 
 from tqdm import tqdm 
 from glob import glob 
+
 from make_dataset import CustomDataset
+from test import model_test
 
 import wandb
 
@@ -33,8 +26,8 @@ def accuracy(predictions, labels):
 def dataset_prep(path, batch_size, mode="train"):
     dataset = CustomDataset(
         pkl_path = path, 
-        domain=1,
-        mode=mode
+        domain = 1,
+        mode = mode
     )
 
     train_loader = DataLoader( 
@@ -65,6 +58,9 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
     print("Start training ...")
     print("="*50)
 
+    ae_criterion = nn.MSELoss()
+    criterion = nn.CrossEntropyLoss()
+
     # Optimizer and Loss function 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -86,38 +82,54 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
             label = label.squeeze(dim=-1)
 
             # Fitting model 
-            pred = model(img1, img2, img3) 
+            d1, d2, d3, pred = model(img1, img2, img3)
 
             
             # Loss caculation
-            loss = criterion(pred, label)
+            ae1_loss = ae_criterion(d1, img1) 
+            ae2_loss = ae_criterion(d2, img2) 
+            ae3_loss = ae_criterion(d3, img3) 
+            lnn_loss = criterion(pred, label) 
+            
+            total_loss = ae1_loss + ae2_loss + ae3_loss + lnn_loss
+
 
             # Run through optimizer
             optimizer.zero_grad()
-            loss.backward()
+            total_loss.backward()
             optimizer.step()
-            avg_cost += loss / total_batch
+            avg_cost += total_loss / total_batch
 
             # Accuracy calculation
             acc = accuracy(pred, label) 
-            avg_cost += loss / total_batch
             total_correct += (pred.argmax(1) == label).type(torch.float).sum().item()
             total_samples += label.size(0)
 
         # Accuracy calculation for batch
         acc = total_correct / total_samples
-        print("Accuracy:", acc * 100)
-        print("Loss:", loss.item())
-        print("="*50)
+        print("Train Accuracy:", acc * 100, end="  ")
+        print("Loss:", total_loss.item())
 
-        # Visualize the results
-        print("Accuracy:", acc * 100)
-        # print("Loss:", str(float(avg_cost)).format(":e"))
-        print("Loss:", loss.item())
-        print("="*50)
-            
+        with torch.no_grad():
+            test_acc, test_anomaly_acc, test_loss, test_threshold = model_test(
+                batch_size = 1,
+                dataset_path = dataset_path.replace("train", "test"),
+                model = model,
+                threshold = total_loss.item(), 
+            )
+
         wandb.log({
             "accuracy": acc, 
-            "loss": loss.item(), 
+            "loss": total_loss.item(), 
             "batch_size": batch_size,
+            "test_anomaly": test_anomaly_acc,
+            "test_loss": test_loss, 
+            "test_threshold": test_threshold,
+            "test_accuracy": test_acc,
         }) 
+        
+    # Saving models
+    path = "./saved_model/"
+    model_name = dataset_path.split("_")[3]
+    print("Saving trained model")
+    torch.save(model, path + model_name + ".pkl")

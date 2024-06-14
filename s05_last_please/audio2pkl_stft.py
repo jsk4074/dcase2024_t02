@@ -28,7 +28,7 @@ def main():
     domain = ['source', 'target']
     crop_sec = 4
     padding = 1
-    to_feature = "mfcc"
+    to_feature = "stft"
     class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slider']
     labels = ["normal", "anomaly"]
 
@@ -84,16 +84,16 @@ def main():
         # Extracting features
         print("="*20, "Extracting features", "="*20) 
         feature_data = [[
-            librosa.feature.mfcc(y = i[0], sr = 16e3, n_mfcc=128,), 
-            librosa.feature.mfcc(y = i[1], sr = 16e3, n_mfcc=128,), 
-            librosa.feature.mfcc(y = i[2], sr = 16e3, n_mfcc=128,), 
+            librosa.stft(y = i[0], hop_length = 256), 
+            librosa.stft(y = i[1], hop_length = 256), 
+            librosa.stft(y = i[2], hop_length = 256), 
             i[3], i[4], i[5]
         ] for i in tqdm(audio_data)] 
 
         # Saving data as .pkl format 
         print("="*20, "Saving raw audio", "="*20)
         save_list(
-            "./data/features/classes/" + dataset_type + "_sr_16e3_" + class_names[index_numba] + "_crop" + str(crop_sec) + "_feature" + to_feature + "_s04.pkl", 
+            "./data/features/stft/" + dataset_type + "_sr_16e3_" + class_names[index_numba] + "_crop" + str(crop_sec) + "_feature" + to_feature + "_s04.pkl", 
             feature_data
         )
 

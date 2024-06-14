@@ -27,11 +27,11 @@ class CustomDataset(Dataset):
         self.transform = transform
 
         # Loading raw data
-        print("="*20, "Loading data", "="*20)
+        # print("="*20, "Loading data", "="*20)
         with open(pkl_path, 'rb') as f:
             self.raw_data = pkl.load(f)
-        print(".pkl data has been loaded")
-        print("Loaded data path :", pkl_path) 
+        # print(".pkl data has been loaded")
+        # print("Loaded data path :", pkl_path) 
 
         # Resizeing feature 
         if crop: 
@@ -53,9 +53,9 @@ class CustomDataset(Dataset):
         self.label_data = [[i[-1]] for i in self.raw_data]
         # self.label_data = [[1] for i in self.raw_data] 
 
-        if mode == "train":
-            self.feature_data = [[i[0], i[1], i[2]] for i in self.raw_data] + [[np.random.rand(128,128), np.random.rand(128,128), np.random.rand(128,128)] for i in range(len(self.raw_data))] 
-            self.label_data = [[i[-1]] for i in self.raw_data] + [[1] for i in self.raw_data] 
+        # if mode == "train":
+        #     self.feature_data = [[i[0], i[1], i[2]] for i in self.raw_data] + [[np.random.rand(128,128), np.random.rand(128,128), np.random.rand(128,128)] for i in range(len(self.raw_data))] 
+        #     self.label_data = [[i[-1]] for i in self.raw_data] + [[1] for i in self.raw_data] 
 
 
     # Data size return 
@@ -68,15 +68,22 @@ class CustomDataset(Dataset):
 
     # Index to data mapping 
     def __getitem__(self, idx): 
-        resize_transform = transforms.Resize((128, 128))
+        # resize_transform = transforms.Resize((128, 128))
+        resize_transform = transforms.Resize((256, 256))
+        # normalize = transforms.Normalize((0.5), (0.5))
 
         x1 = torch.FloatTensor(self.feature_data[idx][0]).unsqueeze(0) 
         x2 = torch.FloatTensor(self.feature_data[idx][1]).unsqueeze(0)
         x3 = torch.FloatTensor(self.feature_data[idx][2]).unsqueeze(0)
+        
+        # x1 = normalize(x1)
+        # x2 = normalize(x2)
+        # x3 = normalize(x3)
 
         x1 = resize_transform(x1)
         x2 = resize_transform(x2)
         x3 = resize_transform(x3)
+
 
         # Make label
         y = torch.LongTensor(self.label_data[idx])
