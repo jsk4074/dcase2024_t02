@@ -41,7 +41,7 @@ def main():
         path = glob("../data/unziped/*" + class_names[index_numba] + "/" + dataset_type + "/*.wav")
 
         # Check domain 
-        path = [i for i in path if i.split("_")[2] == domain[0]]
+        path = [i for i in path if i.split("_")[2] == domain[1]]
 
         # Check for empty list and things ...
         print("Found file counts :", len(path))
@@ -93,7 +93,7 @@ def main():
         # Saving data as .pkl format 
         print("="*20, "Saving raw audio", "="*20)
         save_list(
-            "./data/features/stft/" + dataset_type + "_sr_16e3_" + class_names[index_numba] + "_crop" + str(crop_sec) + "_feature" + to_feature + "_s04.pkl", 
+            "./data/features/stft/" + dataset_type + "_sr_16e3_" + class_names[index_numba] + "_crop" + str(crop_sec) + "_feature" + to_feature + "_s05_target.pkl", 
             feature_data
         )
 

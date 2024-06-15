@@ -23,7 +23,7 @@ def accuracy(predictions, labels):
     acc = correct.sum() / len(correct) 
     return acc
 
-def dataset_prep(path, batch_size, mode="train"):
+def dataset_prep(path, batch_size, mode="test"):
     dataset = CustomDataset(
         pkl_path = path, 
         domain = 1,
@@ -111,7 +111,7 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
         print("Loss:", total_loss.item())
 
         with torch.no_grad():
-            test_acc, test_anomaly_acc, test_loss, test_threshold = model_test(
+            test_acc, test_anomaly_acc, test_loss, test_threshold, roc_auc, roc_pauc = model_test(
                 batch_size = 1,
                 dataset_path = dataset_path.replace("train", "test"),
                 model = model,
@@ -126,10 +126,13 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
             "test_loss": test_loss, 
             "test_threshold": test_threshold,
             "test_accuracy": test_acc,
+            "auc": roc_auc,
+            "pauc": roc_pauc,
         }) 
         
     # Saving models
-    path = "./saved_model/"
-    model_name = dataset_path.split("_")[3]
+    path = "./saved_model/dev/target/"
+    model_name = dataset_path.split("_")[-4]
+    loss_name = str(total_loss.item())
     print("Saving trained model")
-    torch.save(model, path + model_name + ".pkl")
+    torch.save(model, path + model_name + "_" + loss_name + ".pkl")

@@ -1,25 +1,17 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-# from torchvision import transforms
-# from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
-# import torchvision.models as models 
-# import torchvision.transforms as transforms
-
 from torchviz import make_dot
-import gc
- 
-# import librosa 
 import numpy as np
-
-from tqdm import tqdm 
-from glob import glob 
-from make_dataset import CustomDataset
-from test_dry import model_test
-
 import wandb
+import gc
+
+from tqdm import tqdm  
+from test_dry import model_test
+from make_dataset import CustomDataset
+
 
 torch.manual_seed(7777)
 np.random.seed(7777)
@@ -135,11 +127,14 @@ def model_fit(batch_size, learning_rate, epoch, dataset_path, model, mode = "tra
                 threshold = total_loss.item(), 
             )
 
+
+
     # Saving models
-    path = "./saved_model/"
-    model_name = "test_save"
+    path = "./saved_model/dev/target/"
+    model_name = dataset_path.split("_")[-4]
+    loss_name = str(total_loss.item())
     print("Saving trained model")
-    torch.save(model, path + model_name + ".pkl")
+    torch.save(model, path + model_name + "_" + loss_name + ".pkl")
     
 
 

@@ -33,29 +33,11 @@ class CustomDataset(Dataset):
         # print(".pkl data has been loaded")
         # print("Loaded data path :", pkl_path) 
 
-        # Resizeing feature 
-        if crop: 
-            print("Resizeing image ...") 
-            self.crop_sec = 4 
-            self.audio_data = [np.array(i[0][:int(16e3) * self.crop_sec]) for i in tqdm(self.raw_data) if i[2] == domain] 
-
-        # Feature extraction 
-        if feature_extraction:
-            print("="*20, "Extracting features", "="*20) 
-            self.feature_data = [librosa.feature.mfcc(y = i, sr = 16e3, n_mfcc=128,) for i in tqdm(self.audio_data)] 
-
         # Load data
         self.feature_data = [[i[0], i[1], i[2]] for i in self.raw_data] 
-        # self.noise_data = [[np.random.rand(128,128), np.random.rand(128,128), np.random.rand(128,128)] for i in range(len(self.raw_data))] 
-
         
         # Label 
         self.label_data = [[i[-1]] for i in self.raw_data]
-        # self.label_data = [[1] for i in self.raw_data] 
-
-        # if mode == "train":
-        #     self.feature_data = [[i[0], i[1], i[2]] for i in self.raw_data] + [[np.random.rand(128,128), np.random.rand(128,128), np.random.rand(128,128)] for i in range(len(self.raw_data))] 
-        #     self.label_data = [[i[-1]] for i in self.raw_data] + [[1] for i in self.raw_data] 
 
 
     # Data size return 

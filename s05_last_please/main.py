@@ -15,13 +15,16 @@ domain = ['source', 'target']
 class_names = ['ToyTrain', 'gearbox', 'ToyCar', 'bearing', 'valve', 'fan', 'slider']
 
 def main(config = None): 
-    model = ncp()
     run =  wandb.init(config=config)
     run.name= wandb.config["dataset_path"].split("/")[-1].split("_")[3] + "_" + str(wandb.config["learning_rate"]) + "_" + str(wandb.config["batch_size"])
 
     train_path = wandb.config["dataset_path"]
     test_path = train_path.replace("train", "test")
     run_name = train_path.split("/")[-1].split("_")[3]
+
+    model = ncp()
+    print("Loading model from :", "./saved_model/dev/source/" + wandb.config["dataset_path"].split("/")[-1].split("_")[3] + "*.pkl")
+    model = torch.load("./saved_model/dev/source/" + wandb.config["dataset_path"].split("/")[-1].split("_")[3] + "0.0001_domain.pkl")
 
     wandb.log({"run_name": run_name,})
 
@@ -50,7 +53,7 @@ if __name__ == "__main__":
     # main()
     wandb.login()
     sweep_configuration = {
-        "name": "NCP_RTX3090TI_FINAL",
+        "name": "NCP_RTX3090TI_FINAL_FIXED",
         "method": "grid",
         "metric": {
             "goal": "maximize",
@@ -67,7 +70,7 @@ if __name__ == "__main__":
                 "values": [100]
             },
             "dataset_path": {
-                "values": list(glob("./data/features/stft/train*s04.pkl")),
+                "values": list(glob("./data/features/stft/train*s05_target.pkl")),
             },
             # "test_dataset_path": {
             #     "values": list(glob("./data/features/classes/test*x3.pkl")),
